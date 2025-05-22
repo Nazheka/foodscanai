@@ -195,9 +195,9 @@ class MyApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             theme: ThemeData.light().copyWith(
               colorScheme: ColorScheme.light(
-                primary: Colors.blue,
+                primary: const Color(0xFF4CAF50), // Fresh green
                 onPrimary: Colors.white,
-                secondary: Colors.blueAccent,
+                secondary: const Color(0xFF8BC34A), // Light green
                 onSecondary: Colors.white,
                 surface: Colors.white,
                 onSurface: Colors.black,
@@ -207,9 +207,9 @@ class MyApp extends StatelessWidget {
             ),
             darkTheme: ThemeData.dark().copyWith(
               colorScheme: ColorScheme.dark(
-                primary: Colors.blue,
+                primary: const Color(0xFF4CAF50), // Fresh green
                 onPrimary: Colors.white,
-                secondary: Colors.blueAccent,
+                secondary: const Color(0xFF8BC34A), // Light green
                 onSecondary: Colors.white,
                 surface: Colors.grey[900]!,
                 onSurface: Colors.white,

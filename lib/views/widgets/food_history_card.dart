@@ -6,6 +6,8 @@ import 'package:read_the_label/viewmodels/daily_intake_view_model.dart';
 import 'package:read_the_label/viewmodels/ui_view_model.dart';
 import 'package:read_the_label/views/screens/food_analysis_screen.dart';
 import 'package:read_the_label/views/widgets/food_input_form.dart';
+import 'package:read_the_label/theme/app_colors.dart';
+import 'package:read_the_label/views/widgets/search_filter_bar.dart';
 
 class FoodHistoryCard extends StatefulWidget {
   final BuildContext context;
@@ -24,6 +26,14 @@ class FoodHistoryCard extends StatefulWidget {
 }
 
 class _FoodHistoryCardState extends State<FoodHistoryCard> {
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(context) {
     return Container(
@@ -89,62 +99,104 @@ class _FoodHistoryCardState extends State<FoodHistoryCard> {
               ),
             ],
           ),
-          ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: context.watch<DailyIntakeViewModel>().foodHistory.length,
-            itemBuilder: (context, index) {
-              final item =
-                  context.watch<DailyIntakeViewModel>().foodHistory[index];
-              // Only show items from selected date
-              if (isSameDay(item.dateTime, widget.selectedDate)) {
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.white24,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .outline
-                          .withOpacity(0.2),
-                    ),
-                  ),
-                  child: ListTile(
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    title: Text(
-                      item.foodName,
-                      style: const TextStyle(
-                        fontFamily: 'Poppins',
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    subtitle: Text(
-                      DateFormat('h:mm a').format(item.dateTime),
-                      style: TextStyle(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withOpacity(0.6),
-                        fontFamily: 'Poppins',
-                      ),
-                    ),
-                    trailing: Text(
-                      '${item.nutrients['Energy']?.toStringAsFixed(0) ?? 0} kcal',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onPrimary,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        fontFamily: 'Poppins',
-                      ),
+          // Search and Filter Bar
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: SearchFilterBar(
+              searchController: _searchController,
+              onSearchChanged: (query) {
+                context.read<DailyIntakeViewModel>().setSearchQuery(query);
+              },
+              onDateFilterChanged: (date) {
+                context.read<DailyIntakeViewModel>().setFilterDate(date);
+              },
+              selectedDate: context.watch<DailyIntakeViewModel>().filterDate,
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Food History List
+          Consumer<DailyIntakeViewModel>(
+            builder: (context, viewModel, child) {
+              if (viewModel.foodHistory.isEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Center(
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.history,
+                          size: 48,
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          viewModel.searchQuery.isNotEmpty || viewModel.filterDate != null
+                              ? 'No matching food items found'
+                              : 'No food history available',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                            fontSize: 16,
+                          ),
+                        ),
+                        if (viewModel.searchQuery.isNotEmpty || viewModel.filterDate != null)
+                          TextButton(
+                            onPressed: () {
+                              viewModel.clearFilters();
+                              _searchController.clear();
+                            },
+                            child: const Text('Clear Filters'),
+                          ),
+                      ],
                     ),
                   ),
                 );
               }
-              return const SizedBox
-                  .shrink(); // Return empty widget for non-matching dates
+
+              return ListView.builder(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: viewModel.foodHistory.length,
+                itemBuilder: (context, index) {
+                  final item = viewModel.foodHistory[index];
+                  return Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surfaceVariant,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                      ),
+                    ),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      title: Text(
+                        item.foodName,
+                        style: const TextStyle(
+                          fontFamily: 'Poppins',
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      subtitle: Text(
+                        DateFormat('h:mm a').format(item.dateTime),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                          fontFamily: 'Poppins',
+                        ),
+                      ),
+                      trailing: Text(
+                        '${item.nutrients['Energy']?.toStringAsFixed(0) ?? 0} kcal',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          fontFamily: 'Poppins',
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              );
             },
           ),
           GestureDetector(

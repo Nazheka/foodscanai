@@ -76,4 +76,32 @@ class AuthViewModel extends BaseViewModel {
       return false;
     }
   }
+
+  Future<bool> updateUserName(String newName) async {
+    if (!await _connectivityService.isConnected()) {
+      setError("No internet connection. Please connect to the internet to update your name.");
+      return false;
+    }
+
+    try {
+      return await _authService.updateUserName(newName);
+    } catch (e) {
+      setError(e.toString());
+      return false;
+    }
+  }
+
+  Future<bool> updatePassword(String currentPassword, String newPassword) async {
+    if (!await _connectivityService.isConnected()) {
+      setError("No internet connection. Please connect to the internet to update your password.");
+      return false;
+    }
+
+    try {
+      return await _authService.updatePassword(currentPassword, newPassword);
+    } catch (e) {
+      setError(e.toString());
+      return false;
+    }
+  }
 } 

@@ -22,23 +22,66 @@ class DailyIntakeViewModel extends BaseViewModel {
   DateTime _selectedDate = DateTime.now();
   final ValueNotifier<Map<String, double>> dailyIntakeNotifier =
       ValueNotifier<Map<String, double>>({});
+  
+  // Search and filter state
+  String _searchQuery = '';
+  DateTime? _filterDate;
+  List<FoodConsumption> _filteredFoodHistory = [];
 
   // Getters
   Map<String, double> get dailyIntake => _dailyIntake;
-  List<FoodConsumption> get foodHistory => _foodHistory;
+  List<FoodConsumption> get foodHistory => _filteredFoodHistory;
   DateTime get selectedDate => _selectedDate;
+  String get searchQuery => _searchQuery;
+  DateTime? get filterDate => _filterDate;
 
   // Constructor with dependency injection
   DailyIntakeViewModel({
     required this.storageRepository,
     required this.uiProvider,
   }) {
-    // Initialize if needed
     _initViewModel();
   }
 
   void _initViewModel() {
-    // Any initial setup
+    loadFoodHistory();
+  }
+
+  // Search and filter methods
+  void setSearchQuery(String query) {
+    _searchQuery = query.toLowerCase();
+    _applyFilters();
+    notifyListeners();
+  }
+
+  void setFilterDate(DateTime? date) {
+    _filterDate = date;
+    _applyFilters();
+    notifyListeners();
+  }
+
+  void _applyFilters() {
+    _filteredFoodHistory = _foodHistory.where((item) {
+      bool matchesSearch = _searchQuery.isEmpty ||
+          item.foodName.toLowerCase().contains(_searchQuery) ||
+          item.nutrients.entries.any((entry) =>
+              entry.key.toLowerCase().contains(_searchQuery));
+
+      bool matchesDate = _filterDate == null ||
+          (item.dateTime.year == _filterDate!.year &&
+              item.dateTime.month == _filterDate!.month &&
+              item.dateTime.day == _filterDate!.day);
+
+      return matchesSearch && matchesDate;
+    }).toList();
+  }
+
+  // Clear all filters
+  void clearFilters() {
+    _searchQuery = '';
+    _filterDate = null;
+    _filteredFoodHistory = List.from(_foodHistory);
+    notifyListeners();
   }
 
   // Methods for daily intake tracking
@@ -119,6 +162,7 @@ class DailyIntakeViewModel extends BaseViewModel {
     try {
       debugPrint("Loading food history from storage...");
       _foodHistory = await storageRepository.getFoodHistory();
+      _filteredFoodHistory = List.from(_foodHistory);
       debugPrint("Successfully loaded ${_foodHistory.length} food items");
 
       notifyListeners();
@@ -126,6 +170,7 @@ class DailyIntakeViewModel extends BaseViewModel {
       debugPrint("Error loading food history: $e");
       setError("Error loading food history: $e");
       _foodHistory = [];
+      _filteredFoodHistory = [];
     } finally {
       uiProvider.setLoading(false);
     }

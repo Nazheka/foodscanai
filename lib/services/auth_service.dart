@@ -77,4 +77,43 @@ class AuthService {
   Future<bool> isLoggedIn() async {
     return await getCurrentUser() != null;
   }
+
+  Future<bool> updateUserName(String newName) async {
+    final currentUser = await getCurrentUser();
+    if (currentUser == null || currentUser.isGuest) return false;
+
+    final users = await getRegisteredUsers();
+    final userIndex = users.indexWhere((user) => user.id == currentUser.id);
+    if (userIndex == -1) return false;
+
+    final updatedUser = currentUser.copyWith(name: newName);
+    users[userIndex] = updatedUser;
+
+    await _prefs.setStringList(
+      _usersKey,
+      users.map((user) => jsonEncode(user.toJson())).toList(),
+    );
+    await _prefs.setString(_userKey, jsonEncode(updatedUser.toJson()));
+    return true;
+  }
+
+  Future<bool> updatePassword(String currentPassword, String newPassword) async {
+    final currentUser = await getCurrentUser();
+    if (currentUser == null || currentUser.isGuest) return false;
+    if (currentUser.password != currentPassword) return false;
+
+    final users = await getRegisteredUsers();
+    final userIndex = users.indexWhere((user) => user.id == currentUser.id);
+    if (userIndex == -1) return false;
+
+    final updatedUser = currentUser.copyWith(password: newPassword);
+    users[userIndex] = updatedUser;
+
+    await _prefs.setStringList(
+      _usersKey,
+      users.map((user) => jsonEncode(user.toJson())).toList(),
+    );
+    await _prefs.setString(_userKey, jsonEncode(updatedUser.toJson()));
+    return true;
+  }
 } 

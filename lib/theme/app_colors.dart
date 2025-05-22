@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   // Primary colors
-  static const Color primary = Color(0xFF4E7BFF);
-  static const Color secondary = Color(0xFF9C72FF);
-  static const Color accent = Color(0xFF61DAFB);
+  static const Color primary = Color(0xFF4CAF50); // Fresh green
+  static const Color secondary = Color(0xFF8BC34A); // Light green
+  static const Color accent = Color(0xFFAED581); // Soft green
 
   // Surface colors
   static const Color surface = Color(0xFF121212);
@@ -12,10 +12,10 @@ class AppColors {
   static const Color divider = Color(0xFF2D2D2D);
 
   // Semantic colors
-  static const Color success = Color(0xFF4CAF50);
-  static const Color error = Color(0xFFFF5C5C);
-  static const Color warning = Color(0xFFFFA726);
-  static const Color info = Color(0xFF29B6F6);
+  static const Color success = Color(0xFF66BB6A); // Success green
+  static const Color error = Color(0xFFEF5350); // Error red
+  static const Color warning = Color(0xFFFFB74D); // Warning orange
+  static const Color info = Color(0xFF81C784); // Info green
 
   // Text colors
   static const Color onPrimary = Colors.white;
